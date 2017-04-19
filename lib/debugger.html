@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>${error}</title>
+
+  <style type="text/css">
+    h1 {
+      font-size: 15pt;
+      font-weight: normal;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, .3);
+      margin: .7em 0;
+    }
+
+    h3 {
+      font: bold 10pt/1.5 Verdana, sans-serif !important;
+      margin: 1em 0;
+      padding: 0;
+    }
+
+    a {
+      color: #328ADC;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #085AA3;
+    }
+
+    li {
+      padding: 3px 0;
+    }
+
+    table {
+      background: #FDF5CE;
+      padding: .4em .7em;
+      border: 1px dotted silver;
+      overflow: auto;
+      font: 9pt/1.5 Consolas, monospace !important;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    table th, table td {
+      vertical-align: top;
+      text-align: left;
+      padding: 2px 6px;
+      border: 1px solid #e6dfbf;
+    }
+
+    tr:nth-child(2n), tr:nth-child(2n) pre {
+      background-color: #F7F0CB;
+    }
+
+    tr > :first-child {
+      width: 20%;
+    }
+
+    .container {
+      font: 9pt/1.5 Verdana, sans-serif;
+      background: white;
+      color: #333;
+      position: absolute;
+      z-index: 20000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 25px;
+    }
+
+    .panel {
+      background: #CD1818;
+      color: white;
+      font: 13pt/1.5 Verdana, sans-serif;
+      padding: 1px 20px;
+    }
+
+    .panel h2 {
+      font-size: 14pt;
+      font-weight: normal;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, .3);
+      margin: .7em 0;
+    }
+
+    pre {
+      background: #FDF5CE;
+      padding: .4em .7em;
+      border: 1px dotted silver;
+      overflow: auto;
+    }
+
+    .wrapper {
+      padding: 1px 25px;
+    }
+
+    .wrapper h2 {
+      font-weight: 400;
+      color: #328ADC;
+      font: 14pt/1.5 sans-serif;
+      margin: .6em 0;
+    }
+
+    .source b {
+      background: #CD1818;
+      color: white;
+      font-style: normal;
+      display: inline-block;
+      width: 100%;
+      padding: 0 .4em;
+      margin: 0 -.4em;
+    }
+
+    .stack span {
+      color: #666;
+    }
+
+    .inner {
+      background: #F4F3F1;
+      padding: .1em 1em 1em;
+      border-radius: 8px;
+    }
+
+    .previous div {
+      float: right;
+      padding: .3em .6em;
+      background: #df8075;
+      border-radius: 0 0 0 8px;
+      white-space: nowrap;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="panel">
+    <h2>${error}</h2>
+    <h1>${err.message}</h1>
+  </div>
+
+  <div class="previous">${err.previous}</div>
+
+  <div class="wrapper">
+    <h2>Source file</h2>
+    <div class="inner">
+      <p><b>File:</b> ${sourceAnchor}</p>
+      <pre class="source">${source}</pre>
+    </div>
+  </div>
+
+  <div class="wrapper">
+    <h2>Call stack</h2>
+    <div class="inner stack">
+      <ol>
+        ${rows}
+      </ol>
+    </div>
+  </div>
+
+  <div class="wrapper">
+    <h2>HTTP request</h2>
+    <div class="inner request">
+      <h3>Route</h3>
+      <div class="outer">
+        <table>
+          ${req.route}
+        </table>
+      </div>
+
+      <h3>Headers</h3>
+      <div class="outer">
+        <table>
+          ${req.headers}
+        </table>
+      </div>
+
+      <h3>Parameters</h3>
+      <div class="outer">
+        <table>
+          ${req.params}
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
