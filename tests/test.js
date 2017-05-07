@@ -34,9 +34,11 @@ describe('tracy.js', () => {
       const tracyCb = tracy.catcher(cb);
 
       const req = {headers: {}};
-      const res = jest.fn();
-      res.status = jest.fn();
-      res.json = jest.fn();
+      const res = {
+        status: jest.fn(),
+        json: jest.fn(),
+        end: jest.fn(),
+      };
       const next = jest.fn();
 
       expect(() => cb(req, res, next)).toThrow();
@@ -54,9 +56,11 @@ describe('tracy.js', () => {
         route: {test: 'route value'},
         params: {param1: 'value1', param2: 123},
       };
-      const res = jest.fn();
-      res.status = jest.fn();
-      res.json = jest.fn();
+      const res = {
+        status: jest.fn(),
+        json: jest.fn(),
+        end: jest.fn(),
+      };
       const next = jest.fn();
 
       expect(() => cb(req, res, next)).toThrow();
