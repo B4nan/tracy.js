@@ -152,6 +152,18 @@
   <div class="previous">${err.previous}</div>
 
   <div class="wrapper">
+    <h2>Error data</h2>
+    <div class="inner data">
+      <h3>${error}: ${err.message}</h3>
+      <div class="outer">
+        <table>
+          ${err.data}
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrapper">
     <h2>Source file</h2>
     <div class="inner">
       <p><b>File:</b> ${sourceAnchor}</p>
