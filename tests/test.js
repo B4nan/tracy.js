@@ -48,7 +48,6 @@ describe('tracy.js', () => {
 
     it('should display HTML error to browser request', () => {
       tracy.enable();
-      tracy.enableHtmlResponse();
       const cb = () => {throw new exceptions.LogicalException('test', 400, {code: 123}, new Error('PREVIOUS_ERROR'));};
       const tracyCb = tracy.catcher(cb);
 
