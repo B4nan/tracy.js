@@ -1,6 +1,6 @@
 {
   "name": "tracy.js",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "node.js debugger module that displays stack traces in readable html",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
