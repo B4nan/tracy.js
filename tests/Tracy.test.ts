@@ -1,14 +1,23 @@
 process.env.NODE_ENV = '';
 
-import tracy from '../lib/index';
+import Tracy from '../lib/index';
 import * as exceptions from '../lib/exceptions';
 
 describe('tracy.js', () => {
+  const tracy = new Tracy();
+
   describe('error handling', () => {
     test('should be disabled be default', () => {
       expect(tracy.isEnabled()).toEqual(false);
       tracy.enable();
       expect(tracy.isEnabled()).toEqual(true);
+    });
+
+    test('should have static `enable` helper factory', () => {
+      expect(Tracy.enable).toBeInstanceOf(Function);
+      const t = Tracy.enable();
+      expect(t).toBeInstanceOf(Tracy);
+      expect(t.isEnabled()).toEqual(true);
     });
 
     test('should return current NODE_ENV', () => {
@@ -30,7 +39,11 @@ describe('tracy.js', () => {
       tracy.environment = 'production';
       tracy.enable();
       const cb = (...params: any[]) => { throw new exceptions.LogicalException('test'); };
+      const cb2 = (...params: any[]) => {
+        throw { message: 'test', errorCode: 123 };
+      };
       const tracyCb = tracy.catcher(cb);
+      const tracyCb2 = tracy.catcher(cb2);
 
       const req = {headers: {}};
       const res = {
@@ -41,7 +54,9 @@ describe('tracy.js', () => {
       const next = jest.fn();
 
       expect(() => cb(req, res, next)).toThrow();
+      expect(() => cb2(req, res, next)).toThrow();
       expect(() => tracyCb(req, res, next)).not.toThrow();
+      expect(() => tracyCb2(req, res, next)).not.toThrow();
       tracy.environment = 'test';
     });
 
@@ -50,7 +65,15 @@ describe('tracy.js', () => {
       const cb = (...params: any[]) => {
         throw new exceptions.LogicalException('test', 400, {code: 123}, new Error('PREVIOUS_ERROR'));
       };
+      const cb2 = (...params: any[]) => {
+        throw new exceptions.LogicalException('test', 400, {code: 123});
+      };
+      const cb3 = (...params: any[]) => {
+        throw { message: 'test', errorCode: 123 };
+      };
       const tracyCb = tracy.catcher(cb);
+      const tracyCb2 = tracy.catcher(cb2);
+      const tracyCb3 = tracy.catcher(cb3);
 
       const req = {
         headers: {'user-agent': 'webkit'},
@@ -65,7 +88,11 @@ describe('tracy.js', () => {
       const next = jest.fn();
 
       expect(() => cb(req, res, next)).toThrow();
+      expect(() => cb2(req, res, next)).toThrow();
+      expect(() => cb3(req, res, next)).toThrow();
       expect(() => tracyCb(req, res, next)).not.toThrow();
+      expect(() => tracyCb2(req, res, next)).not.toThrow();
+      expect(() => tracyCb3(req, res, next)).not.toThrow();
     });
   });
 

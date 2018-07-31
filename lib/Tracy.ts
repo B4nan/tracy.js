@@ -18,12 +18,19 @@ export class Tracy {
       logger: process.stderr.write,
       baseDir: process.cwd(),
       productionErrorMessage: 'Internal Server Error',
-      allowProductionErrorMessage: false,
+      hideProductionErrorMessage: true,
       showLinesBeforeError: 10,
       showLinesAfterError: 5,
       editor: 'editor://open',
       enableHtmlResponse: true,
     } as Options;
+  }
+
+  static enable(options = {} as Options): Tracy {
+    const tracy = new Tracy();
+    tracy.enable(options);
+
+    return tracy;
   }
 
   enable(options = {} as Options): void {
@@ -50,7 +57,7 @@ export class Tracy {
     };
   }
 
-  errorResponse(req: any, res: any, err = {} as any) {
+  errorResponse(req: any, res: any, err: any) {
     let code = 500;
 
     if (err.code && !isNaN(err.code)) {
@@ -61,12 +68,7 @@ export class Tracy {
     res.status(code);
 
     // Log error to console
-    const error = err.constructor ? err.constructor.name : 'Error';
-    if (err !== undefined) {
-      this.options.logger(err);
-    } else {
-      this.options.logger(`Sending empty ${code} ("${error}") response`);
-    }
+    this.options.logger(`Sending empty ${code} ("${err.constructor.name}") response`);
 
     // is browser request?
     const ua = (req.headers['user-agent'] || '').toLowerCase();
@@ -78,7 +80,7 @@ export class Tracy {
     let json;
 
     if (this.getEnvironment() === 'production') {
-      if (err.message && err.message.indexOf(' ') === -1 && !this.options.allowProductionErrorMessage) {
+      if (err.message && err.message.indexOf(' ') === -1 && this.options.hideProductionErrorMessage) {
         json = { message: err.message };
       } else {
         json = { message: this.options.productionErrorMessage };
@@ -105,9 +107,8 @@ export class Tracy {
   }
 
   private generateHtmlError(err: exceptions.LogicalException | Error | any, req: any): string {
-    const error = err.constructor ? err.constructor.name : 'Error';
     let html = readFileSync(__dirname + '/../debugger.html').toString('utf8');
-    html = html.replace(/\${error}/g, error + (typeof err.code !== 'undefined' ? ` #${err.code}` : ''));
+    html = html.replace(/\${error}/g, err.constructor.name + (typeof err.code !== 'undefined' ? ` #${err.code}` : ''));
     html = html.replace('${err.code}', err.code);
     html = html.replace(/\${err.message}/g, err.message);
 
@@ -231,7 +232,7 @@ export interface Options {
   logger: Function;
   baseDir: string;
   productionErrorMessage: string;
-  allowProductionErrorMessage: boolean;
+  hideProductionErrorMessage: boolean;
   showLinesBeforeError: number;
   showLinesAfterError: number;
   editor: string;
