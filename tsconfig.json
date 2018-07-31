@@ -12,7 +12,7 @@
     "lib": ["es2015", "es7"]
   },
   "files": [
-    "lib/Tracy.ts"
+    "lib/index.ts"
   ],
   "exclude": [
     "node_modules"

@@ -106,7 +106,7 @@ export class Tracy {
 
   private generateHtmlError(err: exceptions.LogicalException | Error | any, req: any): string {
     const error = err.constructor ? err.constructor.name : 'Error';
-    let html = readFileSync(__dirname + '/debugger.html').toString('utf8');
+    let html = readFileSync(__dirname + '/../debugger.html').toString('utf8');
     html = html.replace(/\${error}/g, error + (typeof err.code !== 'undefined' ? ` #${err.code}` : ''));
     html = html.replace('${err.code}', err.code);
     html = html.replace(/\${err.message}/g, err.message);
