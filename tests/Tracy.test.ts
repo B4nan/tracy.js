@@ -1,6 +1,6 @@
 process.env.NODE_ENV = '';
 
-import Tracy from '../lib/index';
+import { Tracy } from '../lib';
 import * as exceptions from '../lib/exceptions';
 
 describe('tracy.js', () => {
