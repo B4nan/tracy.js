@@ -238,4 +238,5 @@ export interface Options {
   enableHtmlResponse: boolean;
 }
 
-export default new Tracy();
+const tracy = new Tracy();
+export default tracy;
