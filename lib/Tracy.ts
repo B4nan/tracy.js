@@ -237,6 +237,3 @@ export interface Options {
   editor: string;
   enableHtmlResponse: boolean;
 }
-
-const tracy = new Tracy();
-export default tracy;
