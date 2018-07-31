@@ -3,7 +3,6 @@
   "version": "0.4.1",
   "description": "node.js debugger module that displays stack traces in readable html",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/B4nan/tracy.js.git"
