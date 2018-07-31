@@ -15,6 +15,8 @@
     "trace",
     "node",
     "es6",
+    "typescript",
+    "ts",
     "readable",
     "friendly",
     "html",
@@ -26,23 +28,43 @@
     "url": "https://github.com/B4nan/tracy.js/issues"
   },
   "homepage": "https://github.com/B4nan/tracy.js#readme",
+  "dependencies": {
+    "lodash.merge": "^4.6.0",
+    "typescript": "^2.9.2"
+  },
   "devDependencies": {
-    "coveralls": "^2.13.0",
-    "git-pre-commit": "^2.1.3",
-    "jest": "^19.0.2"
+    "@types/jest": "^23.3.1",
+    "@types/lodash": "^4.14.112",
+    "@types/node": "^10.5.4",
+    "coveralls": "^3.0.2",
+    "git-pre-commit": "^2.1.4",
+    "jest": "^23.4.2",
+    "ts-jest": "^23.0.1",
+    "ts-node": "^7.0.0",
+    "tslint": "^5.11.0"
   },
   "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/tests/.*\\.(test|spec))\\.(js|ts)$",
+    "testEnvironment": "node",
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json"
+    ],
     "collectCoverage": true,
     "collectCoverageFrom": [
-      "lib/*.js"
+      "lib/**/*.ts"
     ]
   },
   "scripts": {
-    "precommit": "eslint .",
-    "test": "node ./node_modules/jest/bin/jest.js",
-    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls"
-  },
-  "dependencies": {
-    "lodash.merge": "^4.6.0"
+    "build": "tsc",
+    "precommit": "yarn lint",
+    "test": "node node_modules/.bin/jest",
+    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls",
+    "lint": "tslint -c tslint.json -p tsconfig.json"
   }
 }

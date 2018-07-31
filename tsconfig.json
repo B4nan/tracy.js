@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2017",
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": false,
+    "outDir": "./dist",
+    "strict": true,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "lib": ["es2015", "es7"]
+  },
+  "files": [
+    "lib/Tracy.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

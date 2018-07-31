@@ -16,4 +16,4 @@ Heavily inspired by https://github.com/nette/tracy
  
 or 
 
-`$ npm install tracy.js`
+`$ npm i -s tracy.js`

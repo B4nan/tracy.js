@@ -1,40 +1,37 @@
-'use strict';
-
-const fs = require('fs');
-const _merge = require('lodash.merge');
-const exceptions = require('./exceptions');
+import { readFileSync } from 'fs';
+import { merge } from 'lodash';
+import * as exceptions from './exceptions';
 
 /**
  * debugger module that displays stack traces in readable html
  */
-class Tracy {
+export class Tracy {
+
+  private enabled = false; // disable by default
+  private options: Options;
+  public environment: string;
+  public readonly exceptions = exceptions;
 
   constructor() {
-    this.enabled = false; // disable by default
     this.environment = process.env.NODE_ENV || 'development';
     this.options = {
       logger: process.stderr.write,
       baseDir: process.cwd(),
+      productionErrorMessage: 'Internal Server Error',
+      allowProductionErrorMessage: false,
       showLinesBeforeError: 10,
       showLinesAfterError: 5,
       editor: 'editor://open',
       enableHtmlResponse: true,
-    };
-    this.exceptions = exceptions;
+    } as Options;
   }
 
-  /**
-   * @param {Object} [options]
-   */
-  enable(options = {}) {
-    this.options = _merge(this.options, options);
+  enable(options = {} as Options): void {
+    this.options = merge(this.options, options);
     this.enabled = true;
   }
 
-  /**
-   * @returns {Boolean}
-   */
-  isEnabled() {
+  isEnabled(): boolean {
     return this.enabled;
   }
 
@@ -43,10 +40,9 @@ class Tracy {
    * When using promises inside handler, you need to return the Promise from it to allow proper rejection handling
    *
    * @param {Function} callback with `req`, `res` and `next` parameters
-   * @returns {Function}
    */
-  catcher(callback) {
-    return (req, res, next) => {
+  catcher(callback: Function): Function {
+    return (req: any, res: any, next: Function) => {
       Promise
         .resolve()
         .then(() => callback(req, res, next))
@@ -54,12 +50,7 @@ class Tracy {
     };
   }
 
-  /**
-   * @param {Object} req
-   * @param {Object} res
-   * @param {Error|Object} [err]
-   */
-  errorResponse(req, res, err = {}) {
+  errorResponse(req: any, res: any, err = {} as any) {
     let code = 500;
 
     if (err.code && !isNaN(err.code)) {
@@ -85,12 +76,17 @@ class Tracy {
     // is not set to 'production'.  In production, we shouldn't
     // send back any identifying information about errors.
     let json;
+
     if (this.getEnvironment() === 'production') {
-      json = {message: err.message};
+      if (err.message && err.message.indexOf(' ') === -1 && !this.options.allowProductionErrorMessage) {
+        json = { message: err.message };
+      } else {
+        json = { message: this.options.productionErrorMessage };
+      }
     } else if (browser && this.options.enableHtmlResponse) { // tracy like json response when request accepts text/html
-      return res.end(this._generateHtmlError(err, req));
+      return res.end(this.generateHtmlError(err, req));
     } else {
-      json = {message: err.message, stack: err.stack};
+      json = { message: err.message, stack: err.stack } as any;
 
       if (err.previous) {
         json.previous = err.previous;
@@ -108,15 +104,9 @@ class Tracy {
     res.json(json);
   }
 
-  /**
-   * @param {Error} err
-   * @param {Object} req
-   * @returns {String}
-   * @private
-   */
-  _generateHtmlError(err, req) {
+  private generateHtmlError(err: exceptions.LogicalException | Error | any, req: any): string {
     const error = err.constructor ? err.constructor.name : 'Error';
-    let html = fs.readFileSync(__dirname + '/debugger.html').toString('utf8');
+    let html = readFileSync(__dirname + '/debugger.html').toString('utf8');
     html = html.replace(/\${error}/g, error + (typeof err.code !== 'undefined' ? ` #${err.code}` : ''));
     html = html.replace('${err.code}', err.code);
     html = html.replace(/\${err.message}/g, err.message);
@@ -128,39 +118,36 @@ class Tracy {
       html = html.replace('${err.previous}', '');
     }
 
-    html = this._processObject(html, err, 'err', 'data');
+    html = this.processObject(html, err, 'err', 'data');
 
     // get content of originating file
     const rows = err.stack.split('\n').slice(1);
-    html = this._processSourceFile(rows, html);
+    html = this.processSourceFile(rows, html);
 
     // prepare stack rows
     let rowsHtml = '';
-    rows.forEach(row => {
+    rows.forEach((row: string) => {
       row = row.replace('<', '&lt;');
       const file = row.substring(row.indexOf(' (') + 2, row.lastIndexOf(')')).split(':');
       const method = row.substring(row.indexOf('at ') + 3, row.indexOf(' (')) + '()';
-      rowsHtml += `<li>${this._processFile(file, method)}</li>`;
+      rowsHtml += `<li>${this.processFile(file, method)}</li>`;
     });
     html = html.replace('${rows}', rowsHtml);
 
     // request headers, route and parameters
-    html = this._processObject(html, req, 'req', 'route');
-    html = this._processObject(html, req, 'req', 'headers');
-    html = this._processObject(html, req, 'req', 'params');
+    html = this.processObject(html, req, 'req', 'route');
+    html = this.processObject(html, req, 'req', 'headers');
+    html = this.processObject(html, req, 'req', 'params');
 
-    html = this._createFooter(html, req);
+    html = this.createFooter(html, req);
 
     return html;
   }
 
   /**
-   * @param {String[]} line [file, row, col]
-   * @param {String} method
-   * @returns {String}
-   * @private
+   * line array items are [file, row, col]
    */
-  _processFile(line, method = '') {
+  private processFile(line: string[], method = '') {
     if (typeof line[1] === 'undefined') {
       return `<span>node/${line[0]}</span>&nbsp;&nbsp;${method}`;
     }
@@ -179,16 +166,11 @@ class Tracy {
     }
 
     shortIndex += this.options.baseDir.length;
+
     return `<a href="${editor}?file=${encodeURIComponent(line[0])}&amp;line=${line[1]}">...${line[0].substring(shortIndex, shortIndexEnd)}/<b>${fileName}</b>:${line[1]}</a>&nbsp;&nbsp;${method}`;
   }
 
-  /**
-   * @param {String[]} rows
-   * @param {String} html
-   * @return {String}
-   * @private
-   */
-  _processSourceFile(rows, html) {
+  private processSourceFile(rows: string[], html: string): string {
     // find first file in stack from our app
     const row = rows.find(r => r.includes(this.options.baseDir));
     if (!row) {
@@ -208,7 +190,7 @@ class Tracy {
     const sourceLine = parseInt(file[1]);
     const before = sourceLine - this.options.showLinesBeforeError - 1;
     const after = sourceLine + this.options.showLinesAfterError - 1;
-    const lines = fs.readFileSync(file[0]).toString('utf8').split('\n').slice(before, after);
+    const lines = readFileSync(file[0]).toString('utf8').split('\n').slice(before, after);
     let source = '';
     let i = Math.max(1, sourceLine - this.options.showLinesBeforeError);
     lines.forEach(line => {
@@ -217,25 +199,14 @@ class Tracy {
     });
     html = html.replace('${source}', source);
 
-    return html.replace('${sourceAnchor}', this._processFile(file));
+    return html.replace('${sourceAnchor}', this.processFile(file));
   }
 
-  /**
-   * @returns {String}
-   */
-  getEnvironment() {
+  getEnvironment(): string {
     return this.environment;
   }
 
-  /**
-   * @param {String} html
-   * @param {Object} obj
-   * @param {String} objName
-   * @param {String} field
-   * @returns {String}
-   * @private
-   */
-  _processObject(html, obj, objName, field) {
+  private processObject(html: string, obj: any, objName: string, field: string): string {
     if (obj[field] && Object.keys(obj[field]).length > 0) {
       return html.replace(`$\{${objName}.${field}}`, Object.keys(obj[field]).map(key => `<tr><th>${key}</th><td>${obj[field][key]}</td></tr>`).join('\n'));
     } else {
@@ -243,15 +214,9 @@ class Tracy {
     }
   }
 
-  /**
-   * @param {String} html
-   * @param {Object} req
-   * @returns {String}
-   * @private
-   */
-  _createFooter(html, req) {
+  private createFooter(html: string, req: any): string {
     const packageJson = require('../package.json');
-    html = html.replace('${now}', new Date());
+    html = html.replace('${now}', '' + new Date());
     html = html.replace(/\${link}/g, (req.headers['x-forwarded-host'] || req.headers['host']) + req.url);
     html = html.replace('${tracy.version}', packageJson.version);
     html = html.replace('${node.version}', process.versions.node);
@@ -262,4 +227,15 @@ class Tracy {
   }
 }
 
-module.exports = new Tracy();
+export interface Options {
+  logger: Function;
+  baseDir: string;
+  productionErrorMessage: string;
+  allowProductionErrorMessage: boolean;
+  showLinesBeforeError: number;
+  showLinesAfterError: number;
+  editor: string;
+  enableHtmlResponse: boolean;
+}
+
+export default new Tracy();
