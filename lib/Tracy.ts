@@ -252,7 +252,7 @@ export class Tracy {
       this.options.logger(`Sending empty ${code} ("${error}") [${info}]${err && !isEmpty(err.data) ? '\n' + err.data : ''}`);
 
       if (line) {
-        this.options.logger(` \\_${line.trim()}`);
+        this.options.logger(` \\_ ${line.trim()}`);
       }
     }
   }
