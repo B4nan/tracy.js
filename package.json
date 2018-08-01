@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/B4nan/tracy.js#readme",
   "dependencies": {
+    "lodash.isempty": "^4.4.0",
     "lodash.merge": "^4.6.1",
     "typescript": "^2.9.2"
   },

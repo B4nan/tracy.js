@@ -7,7 +7,7 @@ export class LogicalException extends Error {
   data: any;
   previous: Error;
 
-  constructor(message = '', code = 500, data = {} as any | Error, previous: Error = null) {
+  constructor(message = '', code = 500, data = {} as any, previous: Error = null) {
     super(message);
     Error.captureStackTrace(this, this.constructor);
 
@@ -31,20 +31,15 @@ inherits(LogicalException, Error);
 export class DomainException extends LogicalException { }
 
 export class InvalidArgumentException extends LogicalException {
-  /**
-   * @param {String} [message]
-   * @param {Number} [code]
-   */
+
   constructor(message = '', code = 400) {
     super(message, code);
   }
+
 }
 
 export class ValidationException extends InvalidArgumentException {
 
-  /**
-   * @param {String} [message]
-   */
   constructor(message = '') {
     super(message, 400);
   }

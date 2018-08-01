@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { merge } from 'lodash';
+import { merge, isEmpty } from 'lodash';
 import * as exceptions from './exceptions';
 
 /**
@@ -53,7 +53,7 @@ export class Tracy {
       Promise
         .resolve()
         .then(() => callback(req, res, next))
-        .catch(err => this.errorResponse(req, res, err));
+        .catch(err => this.errorResponse(req, res, err || {}));
     };
   }
 
@@ -64,11 +64,8 @@ export class Tracy {
       code = err.code;
     }
 
-    // Set status code
     res.status(code);
-
-    // Log error to console
-    this.options.logger(`Sending empty ${code} ("${err.constructor.name}") response`);
+    this.logToConsole(err, code, req);
 
     // is browser request?
     const ua = (req.headers['user-agent'] || '').toLowerCase();
@@ -226,6 +223,40 @@ export class Tracy {
 
     return html;
   }
+
+  private logToConsole(err: any, code: number, req: any) {
+    const dumpData = !(err instanceof exceptions.LogicalException) || code >= 500;
+
+    // find the first line with app code that caused the error
+    const stack = (err && err.stack) ? err.stack.split('\n') : new Error().stack.split('\n').slice(2);
+    const line = stack.find((l: string) => l.includes(this.options.baseDir) && !l.includes(this.options.baseDir + '/node_modules'));
+
+    let error = err && err.constructor.name;
+    const info = req.url + (req.user && req.user.email ? `, ${req.user.email}` : '');
+
+    if (err !== undefined && dumpData) {
+      if (line && err.stack) {
+        const stack = err.stack.split('\n');
+        const i = stack.findIndex((l: string) => l === line);
+
+        if (i >= 0) {
+          stack[i] = stack[i].replace('   at', '-> at');
+        }
+
+        err.stack = stack.join('\n');
+      }
+
+      this.options.logger(`Sending ${code} ("${error}") [${info}]:\n${err.stack || err}`);
+    } else {
+      error += err && err.message ? ': ' + err.message : '';
+      this.options.logger(`Sending empty ${code} ("${error}") [${info}]${err && !isEmpty(err.data) ? '\n' + err.data : ''}`);
+
+      if (line) {
+        this.options.logger(` \\_${line.trim()}`);
+      }
+    }
+  }
+
 }
 
 export interface Options {

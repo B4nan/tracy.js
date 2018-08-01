@@ -39,11 +39,11 @@ describe('tracy.js', () => {
       tracy.environment = 'production';
       tracy.enable();
       const cb = (...params: any[]) => { throw new exceptions.LogicalException('test'); };
-      const cb2 = (...params: any[]) => {
-        throw { message: 'test', errorCode: 123 };
-      };
+      const cb2 = (...params: any[]) => { throw new exceptions.LogicalException(); };
+      const cb3 = (...params: any[]) => { throw { message: 'test', errorCode: 123 }; };
       const tracyCb = tracy.catcher(cb);
       const tracyCb2 = tracy.catcher(cb2);
+      const tracyCb3 = tracy.catcher(cb3);
 
       const req = {headers: {}};
       const res = {
@@ -55,8 +55,10 @@ describe('tracy.js', () => {
 
       expect(() => cb(req, res, next)).toThrow();
       expect(() => cb2(req, res, next)).toThrow();
+      expect(() => cb3(req, res, next)).toThrow();
       expect(() => tracyCb(req, res, next)).not.toThrow();
       expect(() => tracyCb2(req, res, next)).not.toThrow();
+      expect(() => tracyCb3(req, res, next)).not.toThrow();
       tracy.environment = 'test';
     });
 
