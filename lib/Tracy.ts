@@ -77,7 +77,7 @@ export class Tracy {
     let json;
 
     if (this.getEnvironment() === 'production') {
-      if (err.message && err.message.indexOf(' ') === -1 && this.options.hideProductionErrorMessage) {
+      if (err.message && (err.message.indexOf(' ') === -1 || !this.options.hideProductionErrorMessage)) {
         json = { message: err.message };
       } else {
         json = { message: this.options.productionErrorMessage };
