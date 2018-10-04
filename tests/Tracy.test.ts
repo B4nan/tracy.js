@@ -37,7 +37,7 @@ describe('tracy.js', () => {
 
     test('should display JSON error to API request', () => {
       tracy.environment = 'production';
-      tracy.enable();
+      tracy.enable({ logger: () => {} } as any);
       const cb = (...params: any[]) => { throw new exceptions.LogicalException('test'); };
       const cb2 = (...params: any[]) => { throw new exceptions.LogicalException(); };
       const cb3 = (...params: any[]) => { throw { message: 'test', errorCode: 123 }; };
@@ -63,7 +63,7 @@ describe('tracy.js', () => {
     });
 
     test('should display HTML error to browser request', () => {
-      tracy.enable();
+      tracy.enable({ logger: () => {} } as any);
       const cb = (...params: any[]) => {
         throw new exceptions.LogicalException('test', 400, {code: 123}, new Error('PREVIOUS_ERROR'));
       };

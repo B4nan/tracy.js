@@ -246,10 +246,10 @@ export class Tracy {
         err.stack = stack.join('\n');
       }
 
-      this.options.logger(`Sending ${code} ("${error}") [${info}]:\n${err.stack || err}`);
+      this.options.logger(`Sending ${code} ("${error}") [${info}]:\n`, err.stack || err);
     } else {
       error += err && err.message ? ': ' + err.message : '';
-      this.options.logger(`Sending empty ${code} ("${error}") [${info}]${err && !isEmpty(err.data) ? '\n' + err.data : ''}`);
+      this.options.logger(`Sending empty ${code} ("${error}") [${info}]`, err && !isEmpty(err.data) ? '\n' + err.data : '');
 
       if (line) {
         this.options.logger(` \\_ ${line.trim()}`);
