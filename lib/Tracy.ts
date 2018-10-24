@@ -58,14 +58,14 @@ export class Tracy {
   }
 
   errorResponse(req: any, res: any, err: any) {
-    let code = 500;
+    let statusCode = 500;
 
-    if (err.code && !isNaN(err.code)) {
-      code = err.code;
+    if (err.statusCode && !isNaN(err.statusCode)) {
+      statusCode = err.statusCode;
     }
 
-    res.status(code);
-    this.logToConsole(err, code, req);
+    res.status(statusCode);
+    this.logToConsole(err, statusCode, req);
 
     // is browser request?
     const ua = (req.headers['user-agent'] || '').toLowerCase();
@@ -105,8 +105,8 @@ export class Tracy {
 
   private generateHtmlError(err: exceptions.LogicalException | Error | any, req: any): string {
     let html = readFileSync(__dirname + '/../debugger.html').toString('utf8');
-    html = html.replace(/\${error}/g, err.constructor.name + (typeof err.code !== 'undefined' ? ` #${err.code}` : ''));
-    html = html.replace('${err.code}', err.code);
+    html = html.replace(/\${error}/g, err.constructor.name + (typeof err.statusCode !== 'undefined' ? ` #${err.statusCode}` : ''));
+    html = html.replace('${err.statusCode}', err.statusCode);
     html = html.replace(/\${err.message}/g, err.message);
 
     // previous exception
