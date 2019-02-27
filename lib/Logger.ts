@@ -10,7 +10,7 @@ export class Logger {
     const formats: any[] = [winston.format.colorize({ all: false })];
 
     if (options.timestamp) {
-      formats.push(winston.format.timestamp({ format: 'YY-MM-DD HH:MM:ss' }));
+      formats.push(winston.format.timestamp({ format: 'YY-MM-DD HH:mm:ss' }));
     }
 
     formats.push(winston.format.printf((info: any) => {
